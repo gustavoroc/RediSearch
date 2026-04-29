@@ -1287,16 +1287,8 @@ static int RMCK_GetSelectedDb(RedisModuleCtx *ctx) {
 }
 
 /** Fork */
-static pid_t& rmck_last_child_pid() { static pid_t v = -1; return v; }
-static bool& rmck_kill_fork_child_should_fail() { static bool v = false; return v; }
-
-pid_t RMCK_GetLastChildPid() { return rmck_last_child_pid(); }
-void RMCK_SetKillForkChildShouldFail(bool fail) { rmck_kill_fork_child_should_fail() = fail; }
-
 static int RMCK_Fork(RedisModuleForkDoneHandler cb, void *user_data) {
-  pid_t pid = fork();
-  if (pid > 0) rmck_last_child_pid() = pid;
-  return pid;
+  return fork();
 }
 
 static void RMCK_SendChildHeartbeat(double progress) {
@@ -1317,9 +1309,7 @@ static int RMCK_ExitFromChild(int retcode) {
 }
 
 static int RMCK_KillForkChild(int child_pid) {
-  if (rmck_kill_fork_child_should_fail()) return REDISMODULE_ERR;
-  int rv = waitpid(child_pid, nullptr, 0);
-  return rv > 0 ? REDISMODULE_OK : REDISMODULE_ERR;
+  return waitpid(child_pid, NULL, 0);
 }
 
 static int RMCK_AddACLCategory(RedisModuleCtx *ctx, const char *category) {
